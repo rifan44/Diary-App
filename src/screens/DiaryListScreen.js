@@ -1,148 +1,140 @@
-import React from "react";
-import { View, Text, Image, StyleSheet, ScrollView } from "react-native";
+import React, { useMemo, useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  useWindowDimensions,
+} from "react-native";
+import DiaryCard from "../components/DiaryCard";
+import DiaryDetailModal from "../components/DiaryDetailModal";
+import { COLORS, SPACE, TYPO, BREAKPOINTS } from "../styles/tokens";
 
-// Import gambar lokal dari folder assets/moods
-const localMoodImage = require("../../assets/moods/happy.png");
-const localAvatarImage = require("../../assets/moods/avatar.png");
-
-const diaryEntries = [
+// Data lengkap dengan 2 tambahan untuk tugas akhir
+const DATA = [
   {
     id: 1,
     title: "Pagi yang Tenang",
     date: "2025-10-06",
-    preview:
-      "Hari ini aku bangun lebih pagi dan berjalan kaki 20 menit. Udara terasa sejuk...",
-    moodUri: "https://picsum.photos/seed/happy/80",
-    moodColor: "#4ade80", // Warna border: Hijau
+    preview: "Bangun lebih pagi dan menyeduh kopi...",
+    body: "Catatan lengkap: Hari ini saya bangun jam 5 pagi, menyeduh kopi, dan menikmati udara segar sebelum mulai mengerjakan tugas kuliah. Rasanya sangat menenangkan.",
+    moodUri: "https://picsum.photos/seed/happy/200",
+    heroUri: "https://picsum.photos/seed/happyhero/800/450",
   },
   {
     id: 2,
     title: "Produktif di Kampus",
     date: "2025-10-05",
-    preview:
-      "Menyelesaikan modul praktikum dan berdiskusi dengan tim. Banyak insight baru...",
-    moodUri: "https://picsum.photos/seed/focus/80",
-    moodColor: "#3b82f6", // Warna border: Biru
+    preview: "Menyelesaikan modul dan laporan...",
+    body: "Catatan lengkap: Kemajuan proyek hari ini cukup pesat. Berhasil menyelesaikan modul praktikum dan menyusun laporan bersama teman-teman kelompok di perpustakaan.",
+    moodUri: "https://picsum.photos/seed/focus/200",
+    heroUri: "https://picsum.photos/seed/focushero/800/450",
   },
   {
     id: 3,
     title: "Senja di Taman",
     date: "2025-10-04",
-    preview:
-      "Menikmati senja sambil membaca buku favorit. Warna langit sangat indah...",
-    moodUri: "https://picsum.photos/seed/calm/80",
-    moodColor: "#f59e0b", // Warna border: Oranye
+    preview: "Membaca buku di bawah pohon...",
+    body: "Catatan lengkap: Menghabiskan waktu sore dengan membaca buku di taman kota. Refleksi singkat tentang apa yang sudah dicapai minggu ini.",
+    moodUri: "https://picsum.photos/seed/calm/200",
+    heroUri: "https://picsum.photos/seed/calmhero/800/450",
   },
-  // --- Tugas 1: Tambahkan 2 entri baru ---
   {
     id: 4,
-    title: "Belajar React Native",
-    date: "2025-10-03",
-    preview:
-      "Mengerjakan tugas praktikum tambahan. Seru belajar layouting pakai Flexbox!",
-    isLocalImage: true, // Penanda untuk menggunakan gambar lokal (Tugas 2)
-    moodColor: "#ec4899", // Warna border: Pink
+    title: "Eksplorasi React Native",
+    date: "2026-10-12",
+    preview: "Mencoba membuat layout dua kolom...",
+    body: "Catatan lengkap: Hari ini lumayan menantang karena harus mengatur layout responsif. Tapi seru melihat aplikasi perlahan mulai terlihat rapi ketika beralih dari satu kolom ke dua kolom.",
+    moodUri: "https://picsum.photos/seed/code/200",
+    heroUri: "https://picsum.photos/seed/codehero/800/450",
   },
   {
     id: 5,
-    title: "Makan Malam Bersama",
-    date: "2025-10-02",
-    preview:
-      "Makan malam bareng teman-teman setelah seharian lelah beraktivitas di kampus.",
-    moodUri: "https://picsum.photos/seed/dinner/80",
-    moodColor: "#8b5cf6", // Warna border: Ungu
+    title: "Hujan Deras Malam Hari",
+    date: "2026-10-13",
+    preview: "Suasana dingin cocok untuk coding...",
+    body: "Catatan lengkap: Hujan turun sangat deras malam ini. Suasana dingin begini ternyata sangat mendukung untuk fokus memperbaiki bug dan merapikan StyleSheet aplikasi.",
+    moodUri: "https://picsum.photos/seed/rain/200",
+    heroUri: "https://picsum.photos/seed/rainhero/800/450",
   },
 ];
 
 export default function DiaryListScreen() {
+  // Mendeteksi lebar layar dan menentukan jumlah kolom
+  const { width } = useWindowDimensions();
+  const twoCols = width >= BREAKPOINTS.tablet;
+
+  // State untuk menyimpan item mana yang sedang dipilih/diklik
+  const [selected, setSelected] = useState(null);
+
+  // Kunci unik agar FlatList dibuat ulang saat pindah dari 1 ke 2 kolom (atau sebaliknya)
+  const keyForCols = useMemo(() => (twoCols ? "grid2" : "list1"), [twoCols]);
+
+  // Fungsi untuk me-render setiap kartu
+  const renderItem = ({ item }) => (
+    <View style={[styles.itemWrap, twoCols && styles.itemWrap2]}>
+      <DiaryCard
+        title={item.title}
+        date={item.date}
+        preview={item.preview}
+        moodUri={item.moodUri}
+        variant={twoCols ? "grid" : "list"}
+        onPress={() => setSelected(item)}
+      />
+    </View>
+  );
+
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {/* Tugas 3: Tambahkan avatar pengguna pada header */}
-      <View style={styles.headerContainer}>
-        <Text style={styles.header}>Buku Harian</Text>
-        <Image source={localAvatarImage} style={styles.avatar} />
-      </View>
+    <View style={styles.container}>
+      <Text style={styles.header}>Buku Harian</Text>
+      <FlatList
+        key={keyForCols}
+        data={DATA}
+        numColumns={twoCols ? 2 : 1}
+        keyExtractor={(it) => String(it.id)}
+        renderItem={renderItem}
+        // Memberi jarak antar kolom HANYA jika dalam mode 2 kolom
+        columnWrapperStyle={twoCols ? { gap: SPACE.m } : undefined}
+        contentContainerStyle={{
+          padding: SPACE.l,
+          gap: SPACE.m,
+          paddingTop: SPACE.m,
+        }}
+        ListEmptyComponent={<Text style={styles.empty}>Belum ada entri.</Text>}
+      />
 
-      {diaryEntries.map((entry) => (
-        <View
-          key={entry.id}
-          /* Tugas 4: Variasi border berdasarkan mood di dalam array data */
-          style={[styles.card, { borderColor: entry.moodColor }]}
-        >
-          <Image
-            // Jika isLocalImage bernilai true, pakai localMoodImage. Jika tidak, pakai moodUri dari internet.
-            source={
-              entry.isLocalImage ? localMoodImage : { uri: entry.moodUri }
-            }
-            style={styles.mood}
-          />
-
-          <View style={styles.cardContent}>
-            <Text style={styles.title} numberOfLines={1}>
-              {entry.title}
-            </Text>
-            <Text style={styles.date}>{entry.date}</Text>
-            <Text style={styles.preview} numberOfLines={3} ellipsizeMode="tail">
-              {entry.preview}
-            </Text>
-          </View>
-        </View>
-      ))}
-    </ScrollView>
+      {/* Modal Detail akan muncul jika 'selected' tidak bernilai null */}
+      <DiaryDetailModal
+        visible={!!selected}
+        entry={selected}
+        onClose={() => setSelected(null)}
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#ffffff",
-  },
-  content: {
-    padding: 16,
-  },
-  headerContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 16,
+    backgroundColor: COLORS.surface,
   },
   header: {
-    fontSize: 24,
+    fontSize: TYPO.h1,
     fontWeight: "700",
+    paddingHorizontal: SPACE.l,
+    paddingTop: SPACE.l,
+    color: COLORS.text,
   },
-  avatar: {
-    width: 44, // Target ukuran aksesibilitas yang baik menurut modul
-    height: 44,
-    borderRadius: 22,
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-  },
-  card: {
-    flexDirection: "row",
-    gap: 12,
-    padding: 12,
-    borderWidth: 2, // Diperbesar menjadi 2 agar variasi warnanya lebih terlihat jelas
-    borderRadius: 12,
-    marginBottom: 12,
-  },
-  mood: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-  },
-  cardContent: {
+  itemWrap: {
     flex: 1,
   },
-  title: {
-    fontSize: 16,
-    fontWeight: "700",
+  // Mengatur lebar item menjadi 50% (setengah bagian) jika dalam mode 2 kolom
+  itemWrap2: {
+    flex: 1 / 2,
   },
-  date: {
-    fontSize: 12,
-    color: "#6b7280",
-    marginBottom: 6,
-  },
-  preview: {
-    fontSize: 14,
+  empty: {
+    textAlign: "center",
+    color: COLORS.muted,
+    marginTop: 40,
   },
 });
