@@ -3,6 +3,7 @@
     "name": "diary-app",
     "slug": "diary-app",
     "version": "1.0.0",
+    "plugins": ["expo-router"],
     "orientation": "default",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
